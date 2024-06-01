@@ -24,6 +24,7 @@
 , libjpeg
 , libusb1
 , libuvc
+, libunwind
 , libvlc
 , libvncserver
 , libxcb
@@ -57,12 +58,12 @@ let
   allSources = {
     letoram-arcan = {
       pname = "arcan";
-      version = "0.6.2.1-unstable-2023-11-18";
+      version = "0.6.3.0-unstable-2024-06-02";
       src = fetchFromGitHub {
         owner = "letoram";
         repo = "arcan";
-        rev = "0950ee236f96a555729498d0fdf91c16901037f5";
-        hash = "sha256-TxadRlidy4KRaQ4HunPO6ISJqm6JwnMRM8y6dX6vqJ4=";
+        rev = "65c58a4d7c50ffaf730fe5138ca194ccf6b432a0";
+        hash = "sha256-r0VJyXJhmTiGuVGrU+Wl8nHfNpMabhCgBUR7T7lkIyY=";
       };
     };
     letoram-openal-src = fetchFromGitHub {
@@ -74,20 +75,20 @@ let
     libuvc-src = fetchFromGitHub {
       owner = "libuvc";
       repo = "libuvc";
-      rev = "68d07a00e11d1944e27b7295ee69673239c00b4b";
-      hash = "sha256-IdV18mnPTDBODpS1BXl4ulkFyf1PU2ZmuVGNOIdQwzE=";
+      rev = "047920bcdfb1dac42424c90de5cc77dfc9fba04d";
+      hash = "sha256-Ds4N9ezdO44eBszushQVvK0SUVDwxGkUty386VGqbT0=";
     };
     luajit-src = fetchFromGitHub {
       owner = "LuaJIT";
       repo = "LuaJIT";
-      rev = "656ecbcf8f669feb94e0d0ec4b4f59190bcd2e48";
-      hash = "sha256-/gGQzHgYuWGqGjgpEl18Rbh3Sx2VP+zLlx4N9/hbYLc=";
+      rev = "4a22050df9e76a28ef904382e4b4c69578973cd5";
+      hash = "sha256-H9xWEh/g23xaoyQ8B5pxM76V+MFLTwQ+BgSFk04r4C0=";
     };
     tracy-src = fetchFromGitHub {
-      owner = "wolfpld";
+      owner = "letoram";
       repo = "tracy";
-      rev = "93537dff336e0796b01262e8271e4d63bf39f195";
-      hash = "sha256-FNB2zTbwk8hMNmhofz9GMts7dvH9phBRVIdgVjRcyQM=";
+      rev = "5b3513d9838317bfc0e72344b94aa4443943c2fd";
+      hash = "sha256-hUdYC4ziQ7V7T7k99MERp81F5mPHzFtPFrqReWsTjOQ=";
     };
   };
 in
@@ -122,6 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
     libffi
     libjpeg
     libusb1
+    libunwind
     libuvc
     libvlc
     libvncserver
@@ -166,12 +168,14 @@ stdenv.mkDerivation (finalAttrs: {
       popd
     '';
 
+  patches = [ ./gbm_surface_create_hotfix.patch ];
+
   postPatch = ''
     substituteInPlace ./src/platform/posix/paths.c \
-      --replace "/usr/bin" "$out/bin" \
-      --replace "/usr/share" "$out/share"
+      --replace-fail "/usr/bin" "$out/bin" \
+      --replace-fail "/usr/share" "$out/share"
     substituteInPlace ./src/CMakeLists.txt \
-      --replace "SETUID" "# SETUID"
+      --replace-fail "SETUID" "# SETUID"
   '';
 
   # INFO: Arcan build scripts require the manpages to be generated *before* the
@@ -187,11 +191,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "DISTR_TAG" "Nixpkgs")
     (lib.cmakeFeature "ENGINE_BUILDTAG" finalAttrs.src.rev)
     (lib.cmakeFeature "BUILD_PRESET" "everything")
+    #(lib.cmakeFeature "CMAKE_BUILD_TYPE" "Debug")
     (lib.cmakeBool "BUILTIN_LUA" useBuiltinLua)
     (lib.cmakeBool "DISABLE_JIT" useBuiltinLua)
     (lib.cmakeBool "STATIC_LIBUVC" useStaticLibuvc)
     (lib.cmakeBool "STATIC_SQLite3" useStaticSqlite)
     (lib.cmakeBool "ENABLE_TRACY" useTracy)
+    (lib.cmakeBool "TRACY_LIBUNWIND_BACKTRACE" false)
     "../src"
   ];
 

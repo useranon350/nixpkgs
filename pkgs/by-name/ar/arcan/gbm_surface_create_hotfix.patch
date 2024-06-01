@@ -1,0 +1,13 @@
+diff --git a/src/platform/egl-dri/video.c b/src/platform/egl-dri/video.c
+index c0e46c5e..443bd742 100644
+--- a/src/platform/egl-dri/video.c
++++ b/src/platform/egl-dri/video.c
+@@ -835,7 +836,7 @@ static int setup_buffers_gbm(struct dispout* d)
+ 		if (!d->buffer.surface)
+ 			d->buffer.surface = gbm_surface_create(d->device->buffer.gbm,
+ 				d->display.mode.hdisplay, d->display.mode.vdisplay,
+-				gbm_formats[i], GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
++				gbm_formats[i], 0);
+ 
+ 		if (!d->buffer.surface)
+ 			continue;
