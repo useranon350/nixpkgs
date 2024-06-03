@@ -18,14 +18,14 @@
 
 stdenv.mkDerivation {
   pname = "kmsxx";
-  version = "2021-07-26";
+  version = "2024-05-02";
 
   src = fetchFromGitHub {
     owner = "tomba";
     repo = "kmsxx";
     fetchSubmodules = true;
-    rev = "54f591ec0de61dd192baf781c9b2ec87d5b461f7";
-    sha256 = "sha256-j+20WY4a2iTKZnYjXhxbNnZZ53K3dHpDMTp+ZulS+7c=";
+    rev = "9ae90ce75478e49844cf984562db0dc1a074462f";
+    sha256 = "sha256-XZth4VtXMjZpjEqynwooU0PDrdlVQmQnJXfaosH+2Ok=";
   };
 
   # Didn't detect pybind11 without cmake
