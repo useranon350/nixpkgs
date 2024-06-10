@@ -168,7 +168,7 @@ stdenv.mkDerivation (finalAttrs: {
       popd
     '';
 
-  patches = [ ./gbm_surface_create_hotfix.patch ];
+  patches = [ ./gbm_surface_create_hotfix.patch ./tmp.patch ];
 
   postPatch = ''
     substituteInPlace ./src/platform/posix/paths.c \
@@ -191,7 +191,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "DISTR_TAG" "Nixpkgs")
     (lib.cmakeFeature "ENGINE_BUILDTAG" finalAttrs.src.rev)
     (lib.cmakeFeature "BUILD_PRESET" "everything")
-    #(lib.cmakeFeature "CMAKE_BUILD_TYPE" "Debug")
+    (lib.cmakeFeature "CMAKE_BUILD_TYPE" "Debug")
     (lib.cmakeBool "BUILTIN_LUA" useBuiltinLua)
     (lib.cmakeBool "DISABLE_JIT" useBuiltinLua)
     (lib.cmakeBool "STATIC_LIBUVC" useStaticLibuvc)
@@ -200,6 +200,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "TRACY_LIBUNWIND_BACKTRACE" false)
     "../src"
   ];
+
+  postFixup = ''
+    ln -s /var/log $out/share/arcan/resources/log
+  '';
 
   hardeningDisable = [
     "format"
