@@ -1,0 +1,29 @@
+diff --git a/src/platform/egl-dri/video.c b/src/platform/egl-dri/video.c
+index 443bd742..bd05452b 100644
+--- a/src/platform/egl-dri/video.c
++++ b/src/platform/egl-dri/video.c
+@@ -2222,7 +2222,10 @@ static bool atomic_set_mode(struct dispout* d, int fl)
+ /* resolve sym:id for the properties on the objects we need:
+  */
+ 
+-	if (0 != drmModeAtomicCommit(fd,aptr, fl, NULL)){
++	errno = 0;
++	int tmp = drmModeAtomicCommit(fd, aptr, fl, NULL);
++	if (0 != tmp){
++		debug_print("(%d) atomic-modeset, failed to make atomic commit %d %d", (int) d->id, tmp, errno);
+ 		goto cleanup;
+ 	}
+ 	else
+@@ -4348,9 +4351,10 @@ static bool update_display(struct dispout* d)
+ 			d->display.mode.vdisplay, d->display.mode.vrefresh
+ 		);
+ 
++		int tmp1, tmp2;
+ 		if (d->device->atomic){
+-			if (!find_plane(d) || !atomic_set_mode(d, DRM_MODE_ATOMIC_ALLOW_MODESET)){
+-				debug_print("(%d) atomic modeset failed, revert to legacy\n", (int) d->id);
++			if (!(tmp1 = find_plane(d)) || !(tmp2 = atomic_set_mode(d, DRM_MODE_ATOMIC_ALLOW_MODESET))){
++				debug_print("(%d) atomic modeset failed, revert to legacy %d %d\n", (int) d->id, tmp1, tmp2);
+ 				d->device->atomic = false;
+ 				drmSetClientCap(d->device->disp_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 0);
+ 				drmSetClientCap(d->device->disp_fd, DRM_CLIENT_CAP_ATOMIC, 0);
